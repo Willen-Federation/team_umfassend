@@ -1,1 +1,496 @@
+<!DOCTYPE html>
+<html lang="ja" class="scroll-smooth">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>早稲田大学 基幹理工学研究科 情報理工学専攻 開発集団 | Travenly Developers</title>
+    <meta name="description" content="早稲田大学大学院基幹理工学研究科情報理工学専攻のメンバーによる開発集団。割り勘アプリTravenlyなどを開発。">
+    
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;700;900&family=Noto+Sans+JP:wght@400;700;900&family=Noto+Serif+JP:wght@400;700&family=Merriweather:wght@400;700&display=swap" rel="stylesheet">
 
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script>
+        tailwind.config = {
+            darkMode: 'class',
+            theme: {
+                extend: {
+                    colors: {
+                        // Academic Mode Palette (Waseda Identity)
+                        waseda: {
+                            maroon: '#800000', // [1]
+                            gold: '#D4AF37',
+                            bg: '#F9F9F9',
+                            text: '#333333',
+                        },
+                        // Active Mode Palette (Cyber/Tech)
+                        cyber: {
+                            dark: '#0F172A',
+                            primary: '#8B5CF6', // Violet
+                            neon: '#06B6D4',    // Cyan
+                            accent: '#F43F5E',  // Pink
+                        }
+                    },
+                    fontFamily: {
+                        academic:, // [2]
+                        active:,     // [3]
+                    },
+                    animation: {
+                        'blob': 'blob 7s infinite',
+                        'float': 'float 6s ease-in-out infinite',
+                    },
+                    keyframes: {
+                        blob: {
+                            '0%': { transform: 'translate(0px, 0px) scale(1)' },
+                            '33%': { transform: 'translate(30px, -50px) scale(1.1)' },
+                            '66%': { transform: 'translate(-20px, 20px) scale(0.9)' },
+                            '100%': { transform: 'translate(0px, 0px) scale(1)' },
+                        },
+                        float: {
+                            '0%, 100%': { transform: 'translateY(0)' },
+                            '50%': { transform: 'translateY(-20px)' },
+                        }
+                    }
+                }
+            }
+        }
+    </script>
+
+    <style>
+        /* Flip Card Base Styles */
+       .perspective-1000 { perspective: 1000px; }
+       .transform-style-3d { transform-style: preserve-3d; }
+       .backface-hidden { backface-visibility: hidden; }
+       .rotate-y-180 { transform: rotateY(180deg); }
+        
+        /* Card Flip on Group Hover */
+       .group:hover.group-hover\:rotate-y-180 {
+            transform: rotateY(180deg);
+        }
+
+        /* Glitch Effect for Active Mode Text (Optional visual flair) */
+       .glitch-text {
+            position: relative;
+        }
+       .dark.glitch-text:hover::before,
+       .dark.glitch-text:hover::after {
+            content: attr(data-text);
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: #0F172A;
+        }
+       .dark.glitch-text:hover::before {
+            left: 2px;
+            text-shadow: -1px 0 #06B6D4;
+            clip: rect(24px, 550px, 90px, 0);
+            animation: glitch-anim-2 3s infinite linear alternate-reverse;
+        }
+       .dark.glitch-text:hover::after {
+            left: -2px;
+            text-shadow: -1px 0 #F43F5E;
+            clip: rect(85px, 550px, 140px, 0);
+            animation: glitch-anim 2.5s infinite linear alternate-reverse;
+        }
+        @keyframes glitch-anim {
+            0% { clip: rect(10px, 9999px, 30px, 0); }
+            20% { clip: rect(80px, 9999px, 100px, 0); }
+            100% { clip: rect(50px, 9999px, 20px, 0); }
+        }
+    </style>
+</head>
+
+<body class="font-academic text-waseda-text bg-waseda-bg transition-colors duration-500 dark:bg-cyber-dark dark:text-gray-100 dark:font-active">
+
+    <nav class="fixed w-full z-50 transition-all duration-300 backdrop-blur-md bg-white/80 border-b border-gray-200 dark:bg-cyber-dark/80 dark:border-gray-800">
+        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+            <div class="flex items-center justify-between h-16">
+                <div class="flex-shrink-0 flex items-center gap-2">
+                    <span class="text-2xl" id="nav-icon">🎓</span>
+                    <span class="font-bold text-lg tracking-wider text-waseda-maroon dark:text-transparent dark:bg-clip-text dark:bg-gradient-to-r dark:from-cyber-neon dark:to-cyber-primary">
+                        WASEDA CS <span class="hidden sm:inline">ENGINEERING</span>
+                    </span>
+                </div>
+
+                <div class="flex items-center">
+                    <span class="mr-3 text-sm font-bold text-gray-500 dark:text-gray-400 switch-label-academic">ACADEMIC</span>
+                    <button id="theme-toggle" class="relative inline-flex h-8 w-16 items-center rounded-full bg-gray-300 transition-colors duration-300 focus:outline-none focus:ring-2 focus:ring-waseda-maroon focus:ring-offset-2 dark:bg-slate-700 dark:focus:ring-cyber-neon">
+                        <span class="sr-only">Toggle Mode</span>
+                        <span id="toggle-circle" class="inline-block h-6 w-6 transform rounded-full bg-white shadow-lg transition-transform duration-300 translate-x-1 dark:translate-x-9 flex items-center justify-center">
+                            <svg id="icon-academic" class="h-4 w-4 text-waseda-maroon block dark:hidden" fill="currentColor" viewBox="0 0 20 20"><path d="M10.394 2.08a1 1 0 00-.788 0l-7 3a1 1 0 000 1.84L5.25 8.051a.999.999 0 01.356-.257l4-1.714a1 1 0 11.788 1.838L7.667 9.088l1.94.831a1 1 0 00.787 0l7-3a1 1 0 000-1.838l-7-3zM3.31 9.397L5 10.12v4.102a8.969 8.969 0 00-1.05-.174 1 1 0 01-.89-.89 11.115 11.115 0 01.25-3.762zM9.3 16.573A9.026 9.026 0 007 14.935v-3.957l1.818.78a3 3 0 002.364 0l5.508-2.361v1.17a2.1 2.1 0 00-.005.018l-.138.06c-.16.072-.34.16-.54.26a19.1 19.1 0 01-4.093 1.48 1 1 0 01-.428-1.954 17.1 17.1 0 003.18-.99l.15-.06a.14.14 0 01.006-.002v-1.63l1.87 1.402v7.19a1 1 0 01-1.625.78l-5.767-3.568z"/></svg>
+                            <svg id="icon-active" class="h-4 w-4 text-cyber-neon hidden dark:block" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 10V3L4 14h7v7l9-11h-7z"></path></svg>
+                        </span>
+                    </button>
+                    <span class="ml-3 text-sm font-bold text-gray-500 dark:text-cyber-neon switch-label-active">ACTIVE</span>
+                </div>
+            </div>
+        </div>
+    </nav>
+
+    <section class="relative pt-32 pb-20 lg:pt-48 lg:pb-32 overflow-hidden">
+        <div class="absolute top-0 left-0 w-full h-full overflow-hidden -z-10 hidden dark:block">
+            <div class="absolute top-0 left-1/4 w-96 h-96 bg-cyber-primary/30 rounded-full mix-blend-multiply filter blur-3xl opacity-70 animate-blob"></div>
+            <div class="absolute top-0 right-1/4 w-96 h-96 bg-cyber-neon/30 rounded-full mix-blend-multiply filter blur-3xl opacity-70 animate-blob animation-delay-2000"></div>
+            <div class="absolute -bottom-32 left-1/3 w-96 h-96 bg-pink-600/30 rounded-full mix-blend-multiply filter blur-3xl opacity-70 animate-blob animation-delay-4000"></div>
+        </div>
+
+        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 text-center relative z-10">
+            <span class="inline-block py-1 px-3 rounded-full bg-waseda-maroon/10 text-waseda-maroon text-sm font-semibold mb-6 border border-waseda-maroon/20 dark:bg-cyber-neon/10 dark:text-cyber-neon dark:border-cyber-neon/50 transition-all duration-500">
+                <span data-txt-academic="早稲田大学大学院 情報理工学専攻" data-txt-active="WASEDA CS GRADUATE DEV TEAM">早稲田大学大学院 情報理工学専攻</span>
+            </span>
+            
+            <h1 class="text-4xl md:text-6xl font-black mb-8 tracking-tight transition-all duration-500 leading-tight">
+                <span class="block" data-txt-academic="論理が導く、" data-txt-active="Code the Future.">論理が導く、</span>
+                <span class="block text-waseda-maroon dark:text-transparent dark:bg-clip-text dark:bg-gradient-to-r dark:from-cyber-neon dark:via-white dark:to-cyber-primary glitch-text" 
+                      data-txt-academic="解への最短経路。" 
+                      data-txt-active="Hack the World."
+                      data-text="Hack the World.">
+                      解への最短経路。
+                </span>
+            </h1>
+
+            <p class="mt-4 max-w-2xl mx-auto text-xl text-gray-600 dark:text-gray-300 transition-all duration-500"
+               data-txt-academic="我々は、数理科学と計算機科学の深い理解に基づき、堅牢かつ革新的なシステムを構築する研究者集団です。"
+               data-txt-active="昼は論文、夜はコード。圧倒的な熱量と技術力で、世界をアップデートする「イケイケ」な開発集団、ここにあり。">
+               我々は、数理科学と計算機科学の深い理解に基づき、堅牢かつ革新的なシステムを構築する研究者集団です。
+            </p>
+
+            <div class="mt-10 flex justify-center gap-4">
+                <a href="#travenly-showcase" class="px-8 py-3 rounded-md bg-waseda-maroon text-white font-bold hover:bg-red-900 transition-colors shadow-lg dark:bg-cyber-neon dark:text-gray-900 dark:hover:bg-cyan-300">
+                    <span data-txt-academic="研究成果（プロダクト）を見る" data-txt-active="プロダクトを見る">研究成果（プロダクト）を見る</span>
+                </a>
+                <a href="#members" class="px-8 py-3 rounded-md border border-gray-300 text-gray-700 bg-white hover:bg-gray-50 transition-colors dark:bg-transparent dark:border-gray-600 dark:text-white dark:hover:border-cyber-primary">
+                    <span data-txt-academic="メンバー紹介" data-txt-active="MEET THE TEAM">メンバー紹介</span>
+                </a>
+            </div>
+        </div>
+    </section>
+
+    <section class="py-20 bg-white dark:bg-slate-900 transition-colors duration-500 border-y border-gray-200 dark:border-gray-800">
+        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-12 items-center">
+                
+                <div class="p-8 rounded-2xl bg-slate-50 border border-gray-200 dark:bg-slate-800/50 dark:border-slate-700 transition-all duration-500">
+                    <div class="text-4xl mb-4">🏛️</div>
+                    <h3 class="text-2xl font-bold text-waseda-maroon mb-4 dark:text-gray-200">ACADEMIC & SERIOUS</h3>
+                    <h4 class="text-lg font-bold mb-2">寡黙で、真面目で、熱心。</h4>
+                    <p class="text-gray-600 dark:text-gray-400 leading-relaxed">
+                        基幹理工学研究科の伝統を受け継ぎ、我々は基礎理論をおろそかにしません。
+                        アルゴリズムの正当性、セキュリティモデルの検証、スケーラビリティの確保。
+                        地味に見える基礎研究こそが、最強のエンジニアリングを支えています。
+                    </p>
+                </div>
+
+                <div class="p-8 rounded-2xl bg-slate-50 border border-gray-200 dark:bg-slate-800/50 dark:border-cyber-primary/30 transition-all duration-500 shadow-none dark:shadow-[0_0_20px_rgba(139,92,246,0.15)]">
+                    <div class="text-4xl mb-4">🚀</div>
+                    <h3 class="text-2xl font-bold text-gray-800 mb-4 dark:text-cyber-neon">ACTIVE & COOL</h3>
+                    <h4 class="text-lg font-bold mb-2">格好良く、イケイケで、アクティヴ。</h4>
+                    <p class="text-gray-600 dark:text-gray-400 leading-relaxed">
+                        しかし、研究室に閉じこもっているだけではありません。
+                        ハッカソンでの優勝、OSSへの貢献、そして爆速でのサービス開発。
+                        最新のテックトレンドをキャッチアップし、手を動かし続けることこそが我々の流儀です。
+                    </p>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <section id="travenly-showcase" class="py-24 relative overflow-hidden bg-waseda-bg dark:bg-cyber-dark transition-colors duration-500">
+        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+            <div class="text-center mb-16">
+                <span class="text-cyber-primary font-bold tracking-wider uppercase text-sm">Featured Product</span>
+                <h2 class="text-3xl md:text-5xl font-black mt-2 mb-4 dark:text-white">Travenly</h2>
+                <p class="text-xl text-gray-600 dark:text-gray-300 max-w-2xl mx-auto"
+                   data-txt-academic="経費精算プロセスを最適化する、Webプラットフォーム。"
+                   data-txt-active="割り勘のストレス、ゼロへ。もっと遊ぼう、もっと旅しよう。">
+                   経費精算プロセスを最適化する、Webプラットフォーム。
+                </p>
+                <a href="https://travenly.jp" target="_blank" class="inline-flex items-center mt-6 text-waseda-maroon hover:text-red-700 font-bold dark:text-cyber-neon dark:hover:text-white transition-colors">
+                    Visit travenly.jp <span class="ml-2">→</span>
+                </a>
+            </div>
+
+            <div class="grid grid-cols-1 lg:grid-cols-2 gap-16 items-center">
+                <div class="flex justify-center animate-float">
+                    <div class="relative mx-auto border-gray-800 dark:border-gray-800 bg-gray-800 border-[14px] rounded-[2.5rem] h-[600px] w-[300px] shadow-xl">
+                        <div class="w-[148px] h-[18px] bg-gray-800 top-0 rounded-b-[1rem] left-1/2 -translate-x-1/2 absolute"></div>
+                        <div class="h-[32px] w-[3px] bg-gray-800 absolute -start-[17px] top-[72px] rounded-s-lg"></div>
+                        <div class="h-[46px] w-[3px] bg-gray-800 absolute -start-[17px] top-[124px] rounded-s-lg"></div>
+                        <div class="h-[46px] w-[3px] bg-gray-800 absolute -start-[17px] top-[178px] rounded-s-lg"></div>
+                        <div class="h-[64px] w-[3px] bg-gray-800 absolute -end-[17px] top-[142px] rounded-e-lg"></div>
+                        <div class="rounded-[2rem] overflow-hidden w-[272px] h-[572px] bg-white dark:bg-slate-900 relative">
+                            <div class="bg-emerald-500 p-6 pt-10 text-white">
+                                <h3 class="font-bold text-lg">Travenly</h3>
+                                <p class="text-xs opacity-90">北海道旅行グループ</p>
+                            </div>
+                            <div class="p-4 space-y-4">
+                                <div class="bg-emerald-50 p-4 rounded-lg border border-emerald-100 dark:bg-slate-800 dark:border-slate-700">
+                                    <p class="text-xs text-gray-500 dark:text-gray-400">💡 Total Payment</p>
+                                    <p class="text-2xl font-bold text-gray-800 dark:text-white">¥ 42,000</p>
+                                </div>
+                                <div class="space-y-2">
+                                    <div class="flex items-center justify-between p-3 bg-gray-50 rounded-md dark:bg-slate-800/50">
+                                        <div class="flex items-center gap-3">
+                                            <div class="w-8 h-8 rounded-full bg-blue-100 text-blue-600 flex items-center justify-center text-xs">🍔</div>
+                                            <div>
+                                                <p class="text-sm font-bold dark:text-gray-200">ランチ代</p>
+                                                <p class="text-xs text-gray-500">田中が支払い</p>
+                                            </div>
+                                        </div>
+                                        <span class="font-bold text-sm dark:text-emerald-400">¥4,500</span>
+                                    </div>
+                                    <div class="flex items-center justify-between p-3 bg-gray-50 rounded-md dark:bg-slate-800/50">
+                                        <div class="flex items-center gap-3">
+                                            <div class="w-8 h-8 rounded-full bg-purple-100 text-purple-600 flex items-center justify-center text-xs">🚕</div>
+                                            <div>
+                                                <p class="text-sm font-bold dark:text-gray-200">タクシー代</p>
+                                                <p class="text-xs text-gray-500">佐藤が支払い</p>
+                                            </div>
+                                        </div>
+                                        <span class="font-bold text-sm dark:text-emerald-400">¥2,800</span>
+                                    </div>
+                                </div>
+                                <div class="mt-8 text-center">
+                                    <button class="w-full py-3 bg-emerald-500 text-white rounded-lg font-bold shadow-lg shadow-emerald-500/30">精算する</button>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="space-y-8">
+                    <div class="flex gap-4 group">
+                        <div class="flex-shrink-0 w-12 h-12 rounded-lg bg-emerald-100 text-emerald-600 flex items-center justify-center text-2xl dark:bg-emerald-900/30 dark:text-emerald-400 transition-colors">
+                            ✅
+                        </div>
+                        <div>
+                            <h3 class="text-xl font-bold mb-2 dark:text-white">簡単入力 (Smart Input)</h3>
+                            <p class="text-gray-600 dark:text-gray-400">
+                                合計金額と人数を入れるだけで、瞬時に計算。
+                                面倒な端数処理もアルゴリズムが最適化します。
+                            </p>
+                        </div>
+                    </div>
+                    
+                    <div class="flex gap-4 group">
+                        <div class="flex-shrink-0 w-12 h-12 rounded-lg bg-blue-100 text-blue-600 flex items-center justify-center text-2xl dark:bg-blue-900/30 dark:text-blue-400 transition-colors">
+                            💰
+                        </div>
+                        <div>
+                            <h3 class="text-xl font-bold mb-2 dark:text-white">立て替え記録 (Ledger)</h3>
+                            <p class="text-gray-600 dark:text-gray-400">
+                                「誰が」「いくら」立て替えたかをクラウド同期。
+                                レシートの山から解放され、旅行を純粋に楽しめます。
+                            </p>
+                        </div>
+                    </div>
+
+                    <div class="flex gap-4 group">
+                        <div class="flex-shrink-0 w-12 h-12 rounded-lg bg-purple-100 text-purple-600 flex items-center justify-center text-2xl dark:bg-purple-900/30 dark:text-purple-400 transition-colors">
+                            📜
+                        </div>
+                        <div>
+                            <h3 class="text-xl font-bold mb-2 dark:text-white">履歴の確認 (Audit Log)</h3>
+                            <p class="text-gray-600 dark:text-gray-400">
+                                過去の履歴をいつでも振り返り。
+                                透明性の高い記録管理で、金銭トラブルを未然に防ぎます。
+                            </p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <section id="members" class="py-20 bg-white dark:bg-slate-900 transition-colors duration-500">
+        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+            <h2 class="text-center text-3xl font-bold mb-12 text-waseda-maroon dark:text-white">
+                <span data-txt-academic="研究・開発メンバー" data-txt-active="CORE CONTRIBUTORS">研究・開発メンバー</span>
+            </h2>
+
+            <div class="grid grid-cols-1 md:grid-cols-3 gap-8">
+                
+                <div class="group relative h-96 w-full perspective-1000 cursor-pointer">
+                    <div class="relative h-full w-full transform-style-3d transition-transform duration-700 group-hover:rotate-y-180 shadow-xl rounded-xl">
+                        
+                        <div class="absolute inset-0 backface-hidden bg-white border border-gray-200 rounded-xl p-6 flex flex-col items-center justify-center text-center">
+                            <div class="w-32 h-32 rounded-full bg-gray-200 mb-4 overflow-hidden border-4 border-waseda-maroon">
+                                <img src="https://api.dicebear.com/7.x/avataaars/svg?seed=Felix&clothing=blazerAndShirt" alt="Member Face" class="w-full h-full object-cover">
+                            </div>
+                            <h3 class="text-xl font-bold text-gray-900 font-serif">早稲田 太郎</h3>
+                            <p class="text-sm text-waseda-maroon font-bold mb-2">修士課程 1年</p>
+                            <p class="text-gray-600 text-sm mt-2">
+                                「分散システムにおける合意形成アルゴリズムの最適化について研究しています。」
+                            </p>
+                        </div>
+
+                        <div class="absolute inset-0 backface-hidden rotate-y-180 bg-slate-900 rounded-xl p-6 flex flex-col items-center justify-center text-center border border-cyber-neon overflow-hidden">
+                            <div class="absolute top-0 left-0 w-full h-full bg-gradient-to-br from-purple-900/50 to-slate-900 z-0"></div>
+                            
+                            <div class="relative z-10">
+                                <div class="w-32 h-32 rounded-full bg-indigo-600 mb-4 overflow-hidden border-4 border-cyber-neon mx-auto">
+                                    <img src="https://api.dicebear.com/7.x/avataaars/svg?seed=Felix&clothing=hoodie&top=shortHairDreads01&accessories=sunglasses" alt="Member Cool Face" class="w-full h-full object-cover">
+                                </div>
+                                <h3 class="text-xl font-bold text-white font-sans">Wase-Taro</h3>
+                                <p class="text-sm text-cyber-neon font-bold mb-2">Full Stack Engineer</p>
+                                <p class="text-gray-300 text-sm mt-2">
+                                    「RustとGoが好き。週末はサウナ行ってコード書くのが生きがい。Travenlyのバックエンド担当。」
+                                </p>
+                                <div class="mt-4 flex gap-3 justify-center">
+                                    <span class="px-2 py-1 text-xs rounded bg-gray-700 text-white">#Rust</span>
+                                    <span class="px-2 py-1 text-xs rounded bg-gray-700 text-white">#AWS</span>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="group relative h-96 w-full perspective-1000 cursor-pointer">
+                    <div class="relative h-full w-full transform-style-3d transition-transform duration-700 group-hover:rotate-y-180 shadow-xl rounded-xl">
+                        <div class="absolute inset-0 backface-hidden bg-white border border-gray-200 rounded-xl p-6 flex flex-col items-center justify-center text-center">
+                            <div class="w-32 h-32 rounded-full bg-gray-200 mb-4 overflow-hidden border-4 border-waseda-maroon">
+                                <img src="https://api.dicebear.com/7.x/avataaars/svg?seed=Jessica&clothing=blazerAndShirt" alt="Member Face" class="w-full h-full object-cover">
+                            </div>
+                            <h3 class="text-xl font-bold text-gray-900 font-serif">大隈 花子</h3>
+                            <p class="text-sm text-waseda-maroon font-bold mb-2">博士課程 2年</p>
+                            <p class="text-gray-600 text-sm mt-2">
+                                「HCI（ヒューマンコンピュータインタラクション）領域における行動変容のデザイン。」
+                            </p>
+                        </div>
+                        <div class="absolute inset-0 backface-hidden rotate-y-180 bg-slate-900 rounded-xl p-6 flex flex-col items-center justify-center text-center border border-cyber-accent">
+                            <div class="relative z-10">
+                                <div class="w-32 h-32 rounded-full bg-pink-600 mb-4 overflow-hidden border-4 border-cyber-accent mx-auto">
+                                    <img src="https://api.dicebear.com/7.x/avataaars/svg?seed=Jessica&clothing=graphicShirt&top=longHairMiaWallace" alt="Member Cool Face" class="w-full h-full object-cover">
+                                </div>
+                                <h3 class="text-xl font-bold text-white font-sans">Hana-Chan</h3>
+                                <p class="text-sm text-cyber-accent font-bold mb-2">UI/UX Designer</p>
+                                <p class="text-gray-300 text-sm mt-2">
+                                    「Figmaは友達。使いにくいUIは許さない。深夜のラーメンとデザイン修正が得意技。」
+                                </p>
+                                <div class="mt-4 flex gap-3 justify-center">
+                                    <span class="px-2 py-1 text-xs rounded bg-gray-700 text-white">#Figma</span>
+                                    <span class="px-2 py-1 text-xs rounded bg-gray-700 text-white">#React</span>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="group relative h-96 w-full perspective-1000 cursor-pointer">
+                    <div class="relative h-full w-full transform-style-3d transition-transform duration-700 group-hover:rotate-y-180 shadow-xl rounded-xl">
+                        <div class="absolute inset-0 backface-hidden bg-white border border-gray-200 rounded-xl p-6 flex flex-col items-center justify-center text-center">
+                            <div class="w-32 h-32 rounded-full bg-gray-200 mb-4 overflow-hidden border-4 border-waseda-maroon">
+                                <img src="https://api.dicebear.com/7.x/avataaars/svg?seed=Ken&clothing=blazerAndShirt" alt="Member Face" class="w-full h-full object-cover">
+                            </div>
+                            <h3 class="text-xl font-bold text-gray-900 font-serif">理工 健太</h3>
+                            <p class="text-sm text-waseda-maroon font-bold mb-2">学部 4年</p>
+                            <p class="text-gray-600 text-sm mt-2">
+                                「機械学習を用いた時系列データ解析の研究に取り組む予定です。」
+                            </p>
+                        </div>
+                        <div class="absolute inset-0 backface-hidden rotate-y-180 bg-slate-900 rounded-xl p-6 flex flex-col items-center justify-center text-center border border-cyber-primary">
+                            <div class="relative z-10">
+                                <div class="w-32 h-32 rounded-full bg-purple-600 mb-4 overflow-hidden border-4 border-cyber-primary mx-auto">
+                                    <img src="https://api.dicebear.com/7.x/avataaars/svg?seed=Ken&clothing=collarAndSweater&top=shortHairTheCaesarSidePart" alt="Member Cool Face" class="w-full h-full object-cover">
+                                </div>
+                                <h3 class="text-xl font-bold text-white font-sans">Kenta.py</h3>
+                                <p class="text-sm text-cyber-primary font-bold mb-2">AI Engineer</p>
+                                <p class="text-gray-300 text-sm mt-2">
+                                    「Kaggle Master目指してます。GPU回してる時のファンの音が子守唄。」
+                                </p>
+                                <div class="mt-4 flex gap-3 justify-center">
+                                    <span class="px-2 py-1 text-xs rounded bg-gray-700 text-white">#Python</span>
+                                    <span class="px-2 py-1 text-xs rounded bg-gray-700 text-white">#Torch</span>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+            </div>
+        </div>
+    </section>
+
+    <footer class="bg-gray-100 dark:bg-slate-950 py-12 transition-colors duration-500">
+        <div class="max-w-7xl mx-auto px-4 text-center">
+            <p class="text-waseda-maroon dark:text-gray-500 font-serif dark:font-sans mb-4 text-lg font-bold">
+                早稲田大学大学院基幹理工学研究科 情報理工学専攻 開発集団
+            </p>
+            <div class="flex justify-center gap-6 mb-8 text-2xl">
+                <a href="#" class="text-gray-400 hover:text-waseda-maroon dark:hover:text-cyber-neon transition-colors"><i class="fab fa-github"></i> 🐙</a>
+                <a href="#" class="text-gray-400 hover:text-waseda-maroon dark:hover:text-cyber-neon transition-colors"><i class="fab fa-twitter"></i> 🐦</a>
+            </div>
+            <p class="text-xs text-gray-500">
+                &copy; 2024 Waseda CS Engineering Group. All Rights Reserved.<br>
+                "Travenly" is a product of our lab members.
+            </p>
+        </div>
+    </footer>
+
+    <script>
+        const toggleBtn = document.getElementById('theme-toggle');
+        const html = document.documentElement;
+        const circle = document.getElementById('toggle-circle');
+        const navIcon = document.getElementById('nav-icon');
+        const academicIcon = document.getElementById('icon-academic');
+        const activeIcon = document.getElementById('icon-active');
+
+        // Text Elements that change content
+        const dynamicTextElements = document.querySelectorAll('[data-txt-academic]');
+
+        function updateTextContent(mode) {
+            dynamicTextElements.forEach(el => {
+                // Add a small fade effect
+                el.style.opacity = '0';
+                setTimeout(() => {
+                    if (mode === 'dark') {
+                        el.textContent = el.getAttribute('data-txt-active');
+                    } else {
+                        el.textContent = el.getAttribute('data-txt-academic');
+                    }
+                    el.style.opacity = '1';
+                }, 200);
+            });
+        }
+
+        function setMode(mode) {
+            if (mode === 'dark') {
+                html.classList.add('dark');
+                localStorage.theme = 'dark';
+                circle.classList.add('translate-x-9');
+                circle.classList.remove('translate-x-1');
+                navIcon.textContent = '⚡';
+                updateTextContent('dark');
+            } else {
+                html.classList.remove('dark');
+                localStorage.theme = 'light';
+                circle.classList.remove('translate-x-9');
+                circle.classList.add('translate-x-1');
+                navIcon.textContent = '🎓';
+                updateTextContent('light');
+            }
+        }
+
+        // Initialize based on preference or local storage
+        if (localStorage.theme === 'dark' |
+
+| (!('theme' in localStorage) && window.matchMedia('(prefers-color-scheme: dark)').matches)) {
+            setMode('dark');
+        } else {
+            setMode('light');
+        }
+
+        // Event Listener
+        toggleBtn.addEventListener('click', () => {
+            if (html.classList.contains('dark')) {
+                setMode('light');
+            } else {
+                setMode('dark');
+            }
+        });
+    </script>
+</body>
+</html>
